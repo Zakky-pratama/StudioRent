@@ -22,18 +22,18 @@ class EquipmentSeeder extends Seeder
                 'harga_sewa' => 150000,
                 'satuan_sewa' => 'hari',
                 'stok' => 3,
-                'gambar' => null,
+                'gambar' => '/images/equipments/fender-stratocaster.jpg',
             ],
             [
                 'category_id' => $categories['Gitar & Bass'],
                 'nama_alat' => 'Fender Precision Bass',
                 'merk' => 'Fender',
-                'spesifikasi' => '4-String Alder Body, Olympic White',
+                'spesifikasi' => '4-String Alder Body, Sage Green',
                 'kondisi' => 'Baik',
                 'harga_sewa' => 140000,
                 'satuan_sewa' => 'hari',
                 'stok' => 2,
-                'gambar' => null,
+                'gambar' => '/images/equipments/fender-precision-bass.jpg',
             ],
             [
                 'category_id' => $categories['Gitar & Bass'],
@@ -44,7 +44,7 @@ class EquipmentSeeder extends Seeder
                 'harga_sewa' => 180000,
                 'satuan_sewa' => 'hari',
                 'stok' => 2,
-                'gambar' => null,
+                'gambar' => '/images/equipments/gibson-les-paul.jpg',
             ],
             [
                 'category_id' => $categories['Drum & Perkusi'],
@@ -55,7 +55,7 @@ class EquipmentSeeder extends Seeder
                 'harga_sewa' => 350000,
                 'satuan_sewa' => 'hari',
                 'stok' => 2,
-                'gambar' => null,
+                'gambar' => '/images/equipments/yamaha-stage-custom-drum.jpg',
             ],
             [
                 'category_id' => $categories['Drum & Perkusi'],
@@ -66,7 +66,7 @@ class EquipmentSeeder extends Seeder
                 'harga_sewa' => 300000,
                 'satuan_sewa' => 'hari',
                 'stok' => 1,
-                'gambar' => null,
+                'gambar' => '/images/equipments/roland-td17kvx-edrum.jpg',
             ],
             [
                 'category_id' => $categories['Sound System'],
@@ -77,7 +77,7 @@ class EquipmentSeeder extends Seeder
                 'harga_sewa' => 450000,
                 'satuan_sewa' => 'hari',
                 'stok' => 0,
-                'gambar' => null,
+                'gambar' => '/images/equipments/behringer-x32-mixer.jpg',
             ],
             [
                 'category_id' => $categories['Sound System'],
@@ -88,7 +88,7 @@ class EquipmentSeeder extends Seeder
                 'harga_sewa' => 250000,
                 'satuan_sewa' => 'hari',
                 'stok' => 1,
-                'gambar' => null,
+                'gambar' => '/images/equipments/marshall-jcm800-amp.jpg',
             ],
             [
                 'category_id' => $categories['Sound System'],
@@ -99,7 +99,7 @@ class EquipmentSeeder extends Seeder
                 'harga_sewa' => 100000,
                 'satuan_sewa' => 'hari',
                 'stok' => 5,
-                'gambar' => null,
+                'gambar' => '/images/equipments/shure-sm58-mic.jpg',
             ],
             [
                 'category_id' => $categories['Sound System'],
@@ -110,7 +110,7 @@ class EquipmentSeeder extends Seeder
                 'harga_sewa' => 275000,
                 'satuan_sewa' => 'hari',
                 'stok' => 2,
-                'gambar' => null,
+                'gambar' => '/images/equipments/neumann-u87-condenser.jpg',
             ],
             [
                 'category_id' => $categories['Ruang Studio'],
@@ -121,7 +121,7 @@ class EquipmentSeeder extends Seeder
                 'harga_sewa' => 120000,
                 'satuan_sewa' => 'jam',
                 'stok' => 1,
-                'gambar' => null,
+                'gambar' => '/images/equipments/studio-latihan-band-a.jpg',
             ],
             [
                 'category_id' => $categories['Ruang Studio'],
@@ -132,7 +132,7 @@ class EquipmentSeeder extends Seeder
                 'harga_sewa' => 200000,
                 'satuan_sewa' => 'jam',
                 'stok' => 0,
-                'gambar' => null,
+                'gambar' => '/images/equipments/studio-rekaman-mixing-b.jpg',
             ],
             [
                 'category_id' => $categories['Keyboard & Synth'],
@@ -143,7 +143,7 @@ class EquipmentSeeder extends Seeder
                 'harga_sewa' => 280000,
                 'satuan_sewa' => 'hari',
                 'stok' => 2,
-                'gambar' => null,
+                'gambar' => '/images/equipments/roland-rd2000-piano.jpg',
             ],
         ];
 
