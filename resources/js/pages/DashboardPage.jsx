@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import {
     Download,
-    Eye,
     Hourglass,
     Plus,
     RefreshCw,
@@ -14,17 +13,23 @@ import StatCard from '../components/ui/StatCard';
 import DataTable from '../components/ui/DataTable';
 import StatusBadge from '../components/ui/StatusBadge';
 import RentalCreateModal from '../components/rentals/RentalCreateModal';
+import RentalDeleteModal from '../components/rentals/RentalDeleteModal';
 import RentalDetailModal from '../components/rentals/RentalDetailModal';
+import RentalRescheduleModal from '../components/rentals/RentalRescheduleModal';
+import RentalRowActions from '../components/rentals/RentalRowActions';
+import { useAuth } from '../context/AuthContext';
 import api from '../lib/api';
 import {
     downloadRentalsCsv,
     extractApiError,
+    formatRentalCreatedMessage,
     formatRupiah,
     formatTanggal,
     getInitials,
 } from '../utils/formatters';
 
 export default function DashboardPage() {
+    const { isAdmin } = useAuth();
     const [stats, setStats] = useState(null);
     const [statsError, setStatsError] = useState('');
 
@@ -40,6 +45,8 @@ export default function DashboardPage() {
 
     const [createOpen, setCreateOpen] = useState(false);
     const [detailRental, setDetailRental] = useState(null);
+    const [rescheduleRental, setRescheduleRental] = useState(null);
+    const [deleteRental, setDeleteRental] = useState(null);
     const [returningId, setReturningId] = useState(null);
     const [feedback, setFeedback] = useState('');
 
@@ -192,30 +199,15 @@ export default function DashboardPage() {
             headerClassName: 'text-right',
             cellClassName: 'text-right whitespace-nowrap',
             render: (row) => (
-                <div className="inline-flex items-center justify-end gap-2">
-                    {row.status !== 'dikembalikan' && (
-                        <button
-                            type="button"
-                            disabled={returningId === row.id}
-                            onClick={() => handleReturnRental(row.id)}
-                            className={`min-h-[38px] px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
-                                row.status === 'terlambat'
-                                    ? 'bg-red-600 hover:bg-red-700 text-white'
-                                    : 'bg-slate-100 hover:bg-amber-800 hover:text-white text-slate-800'
-                            } disabled:opacity-50`}
-                        >
-                            {returningId === row.id ? 'Memproses...' : 'Kembalikan'}
-                        </button>
-                    )}
-                    <button
-                        type="button"
-                        onClick={() => setDetailRental(row)}
-                        aria-label={`Lihat detail ${row.kode_sewa}`}
-                        className="w-9 h-9 rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 flex items-center justify-center"
-                    >
-                        <Eye className="w-4 h-4" aria-hidden="true" />
-                    </button>
-                </div>
+                <RentalRowActions
+                    row={row}
+                    isAdmin={isAdmin}
+                    returningId={returningId}
+                    onReturn={handleReturnRental}
+                    onReschedule={setRescheduleRental}
+                    onDetail={setDetailRental}
+                    onDelete={setDeleteRental}
+                />
             ),
         },
     ];
@@ -359,7 +351,7 @@ export default function DashboardPage() {
                 open={createOpen}
                 onClose={() => setCreateOpen(false)}
                 onSuccess={(created) => {
-                    setFeedback(`Transaksi ${created.kode_sewa} berhasil disimpan.`);
+                    setFeedback(formatRentalCreatedMessage(created));
                     fetchStats();
                     fetchRentals();
                 }}
@@ -370,6 +362,38 @@ export default function DashboardPage() {
                 onClose={() => setDetailRental(null)}
                 onReturn={handleReturnRental}
                 returningId={returningId}
+                onReschedule={(target) => {
+                    setDetailRental(null);
+                    setRescheduleRental(target);
+                }}
+                onDelete={
+                    isAdmin
+                        ? (target) => {
+                              setDetailRental(null);
+                              setDeleteRental(target);
+                          }
+                        : null
+                }
+            />
+
+            <RentalRescheduleModal
+                rental={rescheduleRental}
+                onClose={() => setRescheduleRental(null)}
+                onSuccess={(updated) => {
+                    setFeedback(`Jadwal transaksi ${updated.kode_sewa} berhasil diperbarui.`);
+                    fetchStats();
+                    fetchRentals();
+                }}
+            />
+
+            <RentalDeleteModal
+                rental={deleteRental}
+                onClose={() => setDeleteRental(null)}
+                onSuccess={(removed) => {
+                    setFeedback(`Transaksi ${removed.kode_sewa} berhasil dihapus.`);
+                    fetchStats();
+                    fetchRentals();
+                }}
             />
         </BackOfficeLayout>
     );

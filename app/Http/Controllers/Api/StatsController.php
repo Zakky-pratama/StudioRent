@@ -13,6 +13,8 @@ class StatsController extends Controller
 {
     public function index(): JsonResponse
     {
+        Rental::syncOverdueStatuses();
+
         $totalTersedia = (int) Equipment::sum('stok');
         $totalDisewa = (int) RentalItem::whereHas(
             'rental',

@@ -3,7 +3,14 @@ import FormModal from '../ui/FormModal';
 import StatusBadge from '../ui/StatusBadge';
 import { formatRupiah, formatTanggal } from '../../utils/formatters';
 
-export default function RentalDetailModal({ rental, onClose, onReturn = null, returningId = null }) {
+export default function RentalDetailModal({
+    rental,
+    onClose,
+    onReturn = null,
+    returningId = null,
+    onReschedule = null,
+    onDelete = null,
+}) {
     return (
         <FormModal
             open={Boolean(rental)}
@@ -95,28 +102,51 @@ export default function RentalDetailModal({ rental, onClose, onReturn = null, re
                         </span>
                     </div>
 
-                    <div className="flex items-center justify-end gap-2.5">
-                        {onReturn && rental.status !== 'dikembalikan' && (
+                    <div className="flex flex-wrap items-center justify-between gap-2.5">
+                        <div>
+                            {onDelete && (
+                                <button
+                                    type="button"
+                                    onClick={() => onDelete(rental)}
+                                    className="min-h-[44px] px-4 py-2 rounded-xl bg-white border border-red-200 text-red-700 hover:bg-red-50 text-sm font-semibold"
+                                >
+                                    Hapus Transaksi
+                                </button>
+                            )}
+                        </div>
+
+                        <div className="flex flex-wrap items-center justify-end gap-2.5">
+                            {onReschedule && rental.status !== 'dikembalikan' && (
+                                <button
+                                    type="button"
+                                    onClick={() => onReschedule(rental)}
+                                    className="min-h-[44px] px-4 py-2 rounded-xl bg-white border border-slate-200 text-slate-800 hover:bg-slate-50 text-sm font-semibold"
+                                >
+                                    Ubah Jadwal
+                                </button>
+                            )}
+                            {onReturn && rental.status !== 'dikembalikan' && (
+                                <button
+                                    type="button"
+                                    disabled={returningId === rental.id}
+                                    onClick={() => onReturn(rental.id)}
+                                    className={`min-h-[44px] px-4 py-2 rounded-xl text-sm font-semibold text-white transition-colors ${
+                                        rental.status === 'terlambat'
+                                            ? 'bg-red-600 hover:bg-red-700'
+                                            : 'bg-amber-800 hover:bg-amber-900'
+                                    } disabled:opacity-50`}
+                                >
+                                    {returningId === rental.id ? 'Memproses...' : 'Proses Pengembalian'}
+                                </button>
+                            )}
                             <button
                                 type="button"
-                                disabled={returningId === rental.id}
-                                onClick={() => onReturn(rental.id)}
-                                className={`min-h-[44px] px-4 py-2 rounded-xl text-sm font-semibold text-white transition-colors ${
-                                    rental.status === 'terlambat'
-                                        ? 'bg-red-600 hover:bg-red-700'
-                                        : 'bg-amber-800 hover:bg-amber-900'
-                                } disabled:opacity-50`}
+                                onClick={onClose}
+                                className="min-h-[44px] px-4 py-2 rounded-xl bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 text-sm font-medium"
                             >
-                                {returningId === rental.id ? 'Memproses...' : 'Proses Pengembalian'}
+                                Tutup
                             </button>
-                        )}
-                        <button
-                            type="button"
-                            onClick={onClose}
-                            className="min-h-[44px] px-4 py-2 rounded-xl bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 text-sm font-medium"
-                        >
-                            Tutup
-                        </button>
+                        </div>
                     </div>
                 </div>
             )}

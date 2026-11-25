@@ -74,6 +74,12 @@ export default function RentalCreateModal({
 
     const equipmentMap = new Map(equipments.map((eq) => [String(eq.id), eq]));
     const durationDays = calculateDurationDays(tanggalSewa, tanggalKembaliRencana);
+    const todayIso = getTodayIso();
+    const isBackdatedOverdue =
+        Boolean(tanggalSewa) &&
+        Boolean(tanggalKembaliRencana) &&
+        tanggalKembaliRencana >= tanggalSewa &&
+        tanggalKembaliRencana < todayIso;
 
     const estimatedTotal = items.reduce((sum, row) => {
         const eq = equipmentMap.get(String(row.equipment_id));
@@ -211,6 +217,15 @@ export default function RentalCreateModal({
                             )}
                         </div>
                     </div>
+
+                    {isBackdatedOverdue && (
+                        <div
+                            role="status"
+                            className="p-3 rounded-xl bg-amber-50 border border-amber-200 text-xs font-medium text-amber-900"
+                        >
+                            Tanggal rencana kembali sudah melewati hari ini, sehingga transaksi akan langsung berstatus Terlambat saat disimpan.
+                        </div>
+                    )}
 
                     <div className="flex flex-col gap-2.5">
                         <div className="flex items-center justify-between">

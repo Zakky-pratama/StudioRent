@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreRentalRequest;
+use App\Http\Requests\UpdateRentalRequest;
 use App\Http\Resources\RentalResource;
 use App\Models\Equipment;
 use App\Models\Rental;
@@ -18,6 +19,8 @@ class RentalController extends Controller
 {
     public function index(Request $request): AnonymousResourceCollection
     {
+        Rental::syncOverdueStatuses();
+
         $query = Rental::with(['customer', 'user', 'rentalItems.equipment'])
             ->orderByDesc('id');
 
@@ -51,6 +54,8 @@ class RentalController extends Controller
 
     public function show(string $id): RentalResource
     {
+        Rental::syncOverdueStatuses();
+
         $rental = Rental::with(['customer', 'user', 'rentalItems.equipment'])->findOrFail($id);
 
         return new RentalResource($rental);
@@ -69,7 +74,7 @@ class RentalController extends Controller
 
             $tanggalSewa = Carbon::parse($validated['tanggal_sewa']);
             $tanggalRencana = Carbon::parse($validated['tanggal_kembali_rencana']);
-            $durasiHari = max(1, (int) $tanggalSewa->diffInDays($tanggalRencana));
+            $durasiHari = Rental::calculateDurationDays($tanggalSewa, $tanggalRencana);
 
             $totalBiaya = 0;
             $detailItems = [];
@@ -106,10 +111,10 @@ class RentalController extends Controller
             $rental = Rental::create([
                 'customer_id' => $validated['customer_id'],
                 'user_id' => $request->user()->id,
-                'tanggal_sewa' => $validated['tanggal_sewa'],
-                'tanggal_kembali_rencana' => $validated['tanggal_kembali_rencana'],
+                'tanggal_sewa' => $tanggalSewa->toDateString(),
+                'tanggal_kembali_rencana' => $tanggalRencana->toDateString(),
                 'total_biaya' => $totalBiaya,
-                'status' => 'disewa',
+                'status' => Rental::resolveInitialStatus($tanggalRencana),
             ]);
 
             foreach ($detailItems as $detail) {
@@ -154,5 +159,69 @@ class RentalController extends Controller
         $rental->refresh()->load(['customer', 'user', 'rentalItems.equipment']);
 
         return new RentalResource($rental);
+    }
+
+    public function update(UpdateRentalRequest $request, string $id): RentalResource
+    {
+        $validated = $request->validated();
+
+        $rental = DB::transaction(function () use ($validated, $id): Rental {
+            $rental = Rental::with(['rentalItems'])
+                ->lockForUpdate()
+                ->findOrFail($id);
+
+            if ($rental->status === 'dikembalikan') {
+                throw ValidationException::withMessages([
+                    'status' => ['Transaksi yang sudah dikembalikan tidak dapat diubah jadwalnya.'],
+                ]);
+            }
+
+            $tanggalSewa = Carbon::parse($validated['tanggal_sewa']);
+            $tanggalRencana = Carbon::parse($validated['tanggal_kembali_rencana']);
+            $durasiHari = Rental::calculateDurationDays($tanggalSewa, $tanggalRencana);
+
+            $totalBiaya = 0;
+            foreach ($rental->rentalItems as $item) {
+                $subtotal = (int) $item->harga_satuan * (int) $item->jumlah * $durasiHari;
+                $item->update(['subtotal' => $subtotal]);
+                $totalBiaya += $subtotal;
+            }
+
+            $rental->update([
+                'tanggal_sewa' => $tanggalSewa->toDateString(),
+                'tanggal_kembali_rencana' => $tanggalRencana->toDateString(),
+                'total_biaya' => $totalBiaya,
+                'status' => Rental::resolveInitialStatus($tanggalRencana),
+            ]);
+
+            return $rental;
+        });
+
+        $rental->refresh()->load(['customer', 'user', 'rentalItems.equipment']);
+
+        return new RentalResource($rental);
+    }
+
+    public function destroy(string $id): JsonResponse
+    {
+        DB::transaction(function () use ($id): void {
+            $rental = Rental::with(['rentalItems.equipment'])
+                ->lockForUpdate()
+                ->findOrFail($id);
+
+            // Hanya kembalikan stok jika transaksi masih berjalan agar stok alat yang sudah dikembalikan tidak ganda.
+            if ($rental->status !== 'dikembalikan') {
+                foreach ($rental->rentalItems as $item) {
+                    $item->equipment?->increment('stok', (int) $item->jumlah);
+                }
+            }
+
+            $rental->rentalItems()->delete();
+            $rental->delete();
+        });
+
+        return response()->json([
+            'message' => 'Transaksi penyewaan berhasil dihapus.',
+        ]);
     }
 }

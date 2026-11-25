@@ -29,10 +29,13 @@ Route::middleware('auth:sanctum')->group(function (): void {
     Route::get('/rentals', [RentalController::class, 'index']);
     Route::post('/rentals', [RentalController::class, 'store']);
     Route::get('/rentals/{id}', [RentalController::class, 'show']);
+    Route::put('/rentals/{id}', [RentalController::class, 'update']);
     Route::put('/rentals/{id}/kembalikan', [RentalController::class, 'kembalikan']);
 
     // Admin only endpoints
     Route::middleware('admin')->group(function (): void {
+        Route::delete('/rentals/{id}', [RentalController::class, 'destroy']);
+
         Route::post('/categories', [CategoryController::class, 'store']);
         Route::put('/categories/{id}', [CategoryController::class, 'update']);
         Route::delete('/categories/{id}', [CategoryController::class, 'destroy']);

@@ -67,6 +67,14 @@ export function extractApiError(error, fallbackMessage = 'Terjadi kesalahan saat
     };
 }
 
+export function formatRentalCreatedMessage(rental) {
+    const kode = rental?.kode_sewa || '';
+    if (rental?.status === 'terlambat') {
+        return `Transaksi ${kode} berhasil disimpan dengan status Terlambat karena batas kembali sudah terlewat.`;
+    }
+    return `Transaksi ${kode} berhasil disimpan.`;
+}
+
 export function downloadRentalsCsv(rentals, filename = 'rekap-penyewaan-studiorent.csv') {
     const headers = [
         'Kode Sewa',
